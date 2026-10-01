@@ -1,0 +1,151 @@
+[
+  {
+    "name": "google",
+    "source": "https://www.google.com/favicon.ico",
+    "file": "google.ico",
+    "bytes": 5430
+  },
+  {
+    "name": "github",
+    "source": "https://github.com/favicon.ico",
+    "file": "github.ico",
+    "bytes": 6518
+  },
+  {
+    "name": "bilibili",
+    "source": "https://www.bilibili.com/favicon.ico",
+    "file": "bilibili.ico",
+    "bytes": 4286
+  },
+  {
+    "name": "zhihu",
+    "source": "https://static.zhihu.com/heifetz/favicon.ico",
+    "file": "zhihu.ico",
+    "bytes": 4286
+  },
+  {
+    "name": "gmail",
+    "source": "https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico",
+    "file": "gmail.ico",
+    "bytes": 26068
+  },
+  {
+    "name": "notion",
+    "source": "https://www.notion.so/images/favicon.ico",
+    "file": "notion.ico",
+    "bytes": 32038
+  },
+  {
+    "name": "douban",
+    "source": "https://www.douban.com/favicon.ico",
+    "file": "douban.ico",
+    "bytes": 5686
+  },
+  {
+    "name": "v2ex",
+    "source": "https://www.v2ex.com/static/icon-192.png",
+    "file": "v2ex.png",
+    "bytes": 13257
+  },
+  {
+    "name": "taobao",
+    "source": "https://gw.alicdn.com/imgextra/i4/O1CN01qOI6vB1zaqrBKbyFr_!!6000000006731-73-tps-64-64.ico",
+    "file": "taobao.ico",
+    "bytes": 16958
+  },
+  {
+    "name": "youtube",
+    "source": "https://www.youtube.com/s/desktop/d57c41d2/img/favicon_96x96.png",
+    "file": "youtube.png",
+    "bytes": 4249
+  },
+  {
+    "name": "sspai",
+    "source": "https://cdn-static.sspai.com/favicon/sspai.ico",
+    "file": "sspai.ico",
+    "bytes": 16958
+  },
+  {
+    "name": "chatgpt",
+    "source": "https://cdn.oaistatic.com/assets/favicon-miwirzcw.ico",
+    "file": "chatgpt.ico",
+    "bytes": 15406
+  },
+  {
+    "name": "x",
+    "source": "https://x.com/favicon.ico",
+    "file": "x.png",
+    "bytes": 549,
+    "homepage": "https://x.com/"
+  },
+  {
+    "name": "reddit",
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/reddit.svg",
+    "file": "reddit.svg",
+    "bytes": 1233,
+    "homepage": "https://www.reddit.com/"
+  },
+  {
+    "name": "discord",
+    "source": "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/62fddf0fde45a8baedcc7ee5_847541504914fd33810e70a0ea73177e%20(2)-1.png",
+    "file": "discord.png",
+    "bytes": 557,
+    "homepage": "https://discord.com/"
+  },
+  {
+    "name": "telegram",
+    "source": "https://telegram.org/img/favicon-32x32.png",
+    "file": "telegram.png",
+    "bytes": 1043,
+    "homepage": "https://telegram.org/"
+  },
+  {
+    "name": "wikipedia",
+    "source": "https://www.wikipedia.org/static/apple-touch/wikipedia.png",
+    "file": "wikipedia.png",
+    "bytes": 1313,
+    "homepage": "https://www.wikipedia.org/"
+  },
+  {
+    "name": "stackoverflow",
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/stackoverflow.svg",
+    "file": "stackoverflow.svg",
+    "bytes": 441,
+    "homepage": "https://stackoverflow.com/"
+  },
+  {
+    "name": "spotify",
+    "source": "https://open.spotifycdn.com/cdn/images/favicon32.b64ecc03.png",
+    "file": "spotify.png",
+    "bytes": 1129,
+    "homepage": "https://open.spotify.com/"
+  },
+  {
+    "name": "twitch",
+    "source": "https://assets.twitch.tv/assets/favicon-32-e29e246c157142c94346.png",
+    "file": "twitch.png",
+    "bytes": 382,
+    "homepage": "https://www.twitch.tv/"
+  },
+  {
+    "name": "linkedin",
+    "source": "https://static.licdn.com/aero-v1/sc/h/al2o9zrvru7aqj8e1x2rzsrca",
+    "file": "linkedin.ico",
+    "bytes": 24838,
+    "homepage": "https://www.linkedin.com/"
+  },
+  {
+    "name": "dropbox",
+    "source": "https://cfl.dropboxstatic.com/static/metaserver/static/images/favicon.ico",
+    "file": "dropbox.ico",
+    "bytes": 4286,
+    "homepage": "https://www.dropbox.com/"
+  },
+  {
+    "name": "netflix",
+    "source": "https://assets.nflxext.com/us/ffe/siteui/common/icons/nficon2023.ico",
+    "file": "netflix.ico",
+    "bytes": 9854,
+    "homepage": "https://www.netflix.com/"
+  }
+]

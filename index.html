@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="一个简洁的个人起始页：搜索、常用网站与自己的背景。">
+  <title>起点 · 个人导航</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230f766e'/%3E%3Cpath d='M9 23V9h5l9 14V9' fill='none' stroke='white' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
+  <script>try { document.documentElement.dataset.theme = localStorage.getItem('nav-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch { document.documentElement.dataset.theme = 'light'; }</script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="起点首页"><span class="brand-mark" aria-hidden="true">N</span><span id="brand-name">起点</span><span class="brand-divider"></span><span class="brand-caption">个人导航</span></a>
+    <div class="top-actions"><button id="theme-toggle" class="icon-button" type="button" aria-label="切换夜间模式"></button><button id="open-settings" class="quiet-button" type="button"><span data-icon="settings"></span><span>管理设置</span></button></div>
+  </header>
+  <main>
+    <section class="search-section" aria-label="上网搜索">
+      <div class="intro"><span id="intro-eyebrow" class="eyebrow">YOUR PERSONAL START PAGE</span><h1 id="intro-title">从这里出发<span>。</span></h1><p id="intro-subtitle">搜你所想，去你常去。</p></div>
+      <form id="search-form" class="search-box" role="search"><span data-icon="search" class="search-symbol"></span><input id="search-input" name="q" type="search" placeholder="搜索任何你想了解的事物" aria-label="搜索关键词" autocomplete="off" required><button type="submit" class="search-submit" aria-label="搜索"><span data-icon="arrow"></span></button></form>
+      <div class="engine-line"><span id="engine-label" class="engine-label">搜索引擎</span><div id="engine-options" class="engine-options" role="group" aria-label="选择搜索引擎"></div></div>
+    </section>
+    <section class="navigation" aria-labelledby="nav-heading"><div class="section-heading"><div><h2 id="nav-heading">常用网站</h2><span id="site-count" class="count"></span></div><button id="edit-sites" class="text-button" type="button"><span data-icon="edit"></span>编辑导航</button></div><div id="tile-grid" class="tile-grid"></div><div id="empty-state" class="empty-state" hidden><span data-icon="grid"></span><h3>留一个位置给你的常用网站</h3><p>在管理设置中添加第一个导航。</p><button id="add-first" class="primary-button" type="button">添加网站</button></div></section>
+  </main>
+  <footer><span class="footer-dot" aria-hidden="true"></span>让常用的，触手可及。<span class="footer-right">起点 / START HERE</span></footer>
+  <dialog id="settings-dialog" aria-labelledby="settings-title"><form id="settings-form"><div class="dialog-header"><div><span class="eyebrow">MAKE IT YOURS</span><h2 id="settings-title">管理设置</h2></div><button id="close-settings" type="button" class="icon-button" aria-label="关闭设置"><span data-icon="close"></span></button></div><p class="local-note">本机编辑 · 保存后立即生效。导出配置并上传服务器，可同步到其他设备。</p><div class="settings-tabs" role="tablist" aria-label="设置类别"><button type="button" role="tab" id="tab-sites" aria-controls="panel-sites" aria-selected="true" data-tab="sites">导航网站</button><button type="button" role="tab" id="tab-engines" aria-controls="panel-engines" aria-selected="false" data-tab="engines">搜索引擎</button><button type="button" role="tab" id="tab-appearance" aria-controls="panel-appearance" aria-selected="false" data-tab="appearance">外观背景</button></div>
+  <div class="settings-body">
+    <section id="panel-sites" role="tabpanel" aria-labelledby="tab-sites"><div class="panel-intro"><p>网站按列表顺序排列，使用箭头调整位置。</p><button id="add-site" type="button" class="small-button"><span data-icon="plus"></span>添加网站</button></div><div id="site-editor" class="editor-list"></div></section>
+    <section id="panel-engines" role="tabpanel" aria-labelledby="tab-engines" hidden><div class="panel-intro"><p>搜索地址中用 <code>{q}</code> 表示关键词。</p><button id="add-engine" type="button" class="small-button"><span data-icon="plus"></span>添加引擎</button></div><label class="checkbox-field"><input id="show-engine-label" type="checkbox"><span>显示主页上的“搜索引擎”标签</span></label><div id="engine-editor" class="editor-list"></div><label class="field full-field">默认搜索引擎<select id="default-engine"></select></label></section>
+    <section id="panel-appearance" role="tabpanel" aria-labelledby="tab-appearance" hidden><label class="field full-field">导航页名称<input id="page-name" maxlength="30" required></label><label class="field full-field">第一行 · 顶部小字<input id="intro-eyebrow-input" maxlength="100"></label><label class="field full-field">第二行 · 主标题<input id="intro-title-input" maxlength="80"></label><label class="field full-field">第三行 · 副标题<input id="intro-subtitle-input" maxlength="150"></label><p class="field-hint">这三行文字留空时，主页隐藏对应行。</p><div class="color-fields"><label class="field">日间背景颜色<input type="color" id="light-color"></label><label class="field">夜间背景颜色<input type="color" id="dark-color"></label></div><label class="field full-field">背景方式<select id="background-type"><option value="solid">纯色背景</option><option value="image">自定义图片</option></select></label><div id="image-settings" hidden><label class="upload-area" for="background-upload"><span data-icon="image"></span><strong>选择一张背景图片</strong><span>支持 JPG、PNG、WebP · 图片会自动缩小后保存</span><input id="background-upload" type="file" accept="image/jpeg,image/png,image/webp" hidden></label><img id="background-preview" alt="当前背景图片预览" hidden><button id="remove-background" type="button" class="text-button">移除图片</button></div></section>
+    <p id="settings-error" class="error-message" role="alert" hidden></p>
+    <div class="config-actions"><button id="export-config" type="button" class="text-button"><span data-icon="download"></span>导出配置</button><label class="text-button import-label" tabindex="0" role="button"><span data-icon="upload"></span>导入配置<input id="import-config" type="file" accept=".js,.json" hidden></label><button id="use-server" type="button" class="text-button">使用服务器配置</button></div>
+  </div><div class="dialog-footer"><span>设置仅存于此浏览器</span><div><button id="cancel-settings" type="button" class="quiet-button">取消</button><button type="submit" class="primary-button">保存设置<span data-icon="check"></span></button></div></div></form></dialog>
+  <div id="toast" role="status" class="toast" hidden></div>
+</body>
+</html>

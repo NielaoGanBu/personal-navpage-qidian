@@ -1,0 +1,15 @@
+# 本地环境与私有配置
+.env
+.env.*
+config.local.js
+private/
+
+# 临时文件与编辑器设置
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+.vscode/
+
+# 发布包通过 GitHub Releases 提供
+*.zip
