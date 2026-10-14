@@ -25,5 +25,5 @@ window.NAV_CONFIG = {
     {"name":"V2EX","url":"https://www.v2ex.com/","badge":"V2","description":"创意与技术的社区"},
     {"name":"淘宝","url":"https://www.taobao.com/","badge":"淘","description":"挑选生活中的小美好"}
   ],
-  "appearance": {"type":"solid","light":"#f4f6f5","dark":"#121817","image":""}
+  "appearance": {"type":"solid","light":"#f5f5f7","dark":"#1c1c1e","image":""}
 };

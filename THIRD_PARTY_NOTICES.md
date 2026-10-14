@@ -4,19 +4,19 @@
 
 ## 来源及许可范围
 
-Reddit 和 Stack Overflow 的 SVG 来自 Simple Icons。其项目许可证与图标各自的品牌条款需要分别查看；项目级 CC0 不代表所有品牌图标均可不受限制使用。参考 [Simple Icons LICENSE](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md) 和 [DISCLAIMER](https://github.com/simple-icons/simple-icons/blob/develop/DISCLAIMER.md)。
+哔哩哔哩、知乎、豆瓣、Reddit 和 Stack Overflow 的 SVG 来自 Simple Icons，前三者仅适配品牌颜色。其项目许可证与图标各自的品牌条款需要分别查看；项目级 CC0 不代表所有品牌图标均可不受限制使用。参考 [Simple Icons LICENSE](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md) 和 [DISCLAIMER](https://github.com/simple-icons/simple-icons/blob/develop/DISCLAIMER.md)。
 
 其他图片来自相应网站的 favicon 或官方静态资源。来源记录不等于独立再分发授权；当前记录尚未包含这些文件的独立许可证明，不能将其视为本项目已授予的 MIT 素材。使用、再分发或替换时应遵守对应权利人的条款。
 
 | 文件 | 来源 | 授权说明 |
 | --- | --- | --- |
-| `icons/google.ico` | [google](https://www.google.com/favicon.ico) | 官方 favicon / 静态资源；独立许可未核实 |
-| `icons/github.ico` | [github](https://github.com/favicon.ico) | 官方 favicon / 静态资源；独立许可未核实 |
-| `icons/bilibili.ico` | [bilibili](https://www.bilibili.com/favicon.ico) | 官方 favicon / 静态资源；独立许可未核实 |
-| `icons/zhihu.ico` | [zhihu](https://static.zhihu.com/heifetz/favicon.ico) | 官方 favicon / 静态资源；独立许可未核实 |
+| `icons/google.png` | [google](https://www.gstatic.com/images/branding/googleg/1x/googleg_standard_color_128dp.png) | 官方品牌图标；独立许可未核实 |
+| `icons/github.svg` | [github](https://github.githubassets.com/favicons/favicon.svg) | 官方 favicon；移除深色自适应样式以配合白色图标底板，独立许可未核实 |
+| `icons/bilibili.svg` | [bilibili](https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/bilibili.svg) | Simple Icons |
+| `icons/zhihu.svg` | [zhihu](https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/zhihu.svg) | Simple Icons |
 | `icons/gmail.ico` | [gmail](https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico) | 官方 favicon / 静态资源；独立许可未核实 |
 | `icons/notion.ico` | [notion](https://www.notion.so/images/favicon.ico) | 官方 favicon / 静态资源；独立许可未核实 |
-| `icons/douban.ico` | [douban](https://www.douban.com/favicon.ico) | 官方 favicon / 静态资源；独立许可未核实 |
+| `icons/douban.svg` | [douban](https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/douban.svg) | Simple Icons |
 | `icons/v2ex.png` | [v2ex](https://www.v2ex.com/static/icon-192.png) | 官方 favicon / 静态资源；独立许可未核实 |
 | `icons/taobao.ico` | [taobao](https://gw.alicdn.com/imgextra/i4/O1CN01qOI6vB1zaqrBKbyFr_!!6000000006731-73-tps-64-64.ico) | 官方 favicon / 静态资源；独立许可未核实 |
 | `icons/youtube.png` | [youtube](https://www.youtube.com/s/desktop/d57c41d2/img/favicon_96x96.png) | 官方 favicon / 静态资源；独立许可未核实 |
@@ -35,3 +35,5 @@ Reddit 和 Stack Overflow 的 SVG 来自 Simple Icons。其项目许可证与图
 | `icons/netflix.ico` | [netflix](https://assets.nflxext.com/us/ffe/siteui/common/icons/nficon2023.ico) | 官方 favicon / 静态资源；独立许可未核实 |
 
 完整机器可读来源记录见 [icons/sources.json](icons/sources.json)。替换图标文件后，也应同步更新来源记录。
+
+仍保留旧版兼容图标：`google.ico`、`github.ico`、`bilibili.ico`、`zhihu.ico`、`douban.ico`，分别来自 Google、GitHub、哔哩哔哩、知乎和豆瓣的官方 favicon，原始来源继续记录在 `icons/sources.json` 的 `*-legacy` 项目中。
