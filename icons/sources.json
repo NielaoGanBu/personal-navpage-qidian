@@ -1,27 +1,31 @@
 [
   {
     "name": "google",
-    "source": "https://www.google.com/favicon.ico",
-    "file": "google.ico",
-    "bytes": 5430
+    "source": "https://www.gstatic.com/images/branding/googleg/1x/googleg_standard_color_128dp.png",
+    "file": "google.png",
+    "bytes": 3428,
+    "note": "128px 官方品牌图标"
   },
   {
     "name": "github",
-    "source": "https://github.com/favicon.ico",
-    "file": "github.ico",
-    "bytes": 6518
+    "source": "https://github.githubassets.com/favicons/favicon.svg",
+    "file": "github.svg",
+    "bytes": 959,
+    "note": "Removed adaptive dark-mode styles for the white icon surface"
   },
   {
     "name": "bilibili",
-    "source": "https://www.bilibili.com/favicon.ico",
-    "file": "bilibili.ico",
-    "bytes": 4286
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/bilibili.svg",
+    "file": "bilibili.svg",
+    "bytes": 1396,
+    "note": "SVG 品牌色适配"
   },
   {
     "name": "zhihu",
-    "source": "https://static.zhihu.com/heifetz/favicon.ico",
-    "file": "zhihu.ico",
-    "bytes": 4286
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/zhihu.svg",
+    "file": "zhihu.svg",
+    "bytes": 933,
+    "note": "SVG 品牌色适配"
   },
   {
     "name": "gmail",
@@ -37,9 +41,10 @@
   },
   {
     "name": "douban",
-    "source": "https://www.douban.com/favicon.ico",
-    "file": "douban.ico",
-    "bytes": 5686
+    "source": "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/douban.svg",
+    "file": "douban.svg",
+    "bytes": 325,
+    "note": "SVG 品牌色适配"
   },
   {
     "name": "v2ex",
@@ -147,5 +152,35 @@
     "file": "netflix.ico",
     "bytes": 9854,
     "homepage": "https://www.netflix.com/"
+  },
+  {
+    "name": "google-legacy",
+    "source": "https://www.google.com/favicon.ico",
+    "file": "google.ico",
+    "bytes": 5430
+  },
+  {
+    "name": "github-legacy",
+    "source": "https://github.com/favicon.ico",
+    "file": "github.ico",
+    "bytes": 6518
+  },
+  {
+    "name": "bilibili-legacy",
+    "source": "https://www.bilibili.com/favicon.ico",
+    "file": "bilibili.ico",
+    "bytes": 4286
+  },
+  {
+    "name": "zhihu-legacy",
+    "source": "https://static.zhihu.com/heifetz/favicon.ico",
+    "file": "zhihu.ico",
+    "bytes": 4286
+  },
+  {
+    "name": "douban-legacy",
+    "source": "https://www.douban.com/favicon.ico",
+    "file": "douban.ico",
+    "bytes": 5686
   }
 ]

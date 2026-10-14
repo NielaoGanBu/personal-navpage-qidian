@@ -26,10 +26,10 @@ let toastTimer;
 function toast(message) { $('toast').textContent = message; $('toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('toast').hidden = true; }, 3500); }
 function validUrl(value) { try { const u = new URL(value); return ['http:','https:'].includes(u.protocol); } catch { return false; } }
 const siteIcons = {
-  'google.com':'google.ico', 'github.com':'github.ico', 'bilibili.com':'bilibili.ico',
-  'zhihu.com':'zhihu.ico', 'youtube.com':'youtube.png', 'chatgpt.com':'chatgpt.ico',
+  'google.com':'google.png', 'github.com':'github.svg', 'bilibili.com':'bilibili.svg',
+  'zhihu.com':'zhihu.svg', 'youtube.com':'youtube.png', 'chatgpt.com':'chatgpt.ico',
   'mail.google.com':'gmail.ico', 'notion.so':'notion.ico', 'notion.com':'notion.ico',
-  'douban.com':'douban.ico', 'sspai.com':'sspai.ico', 'v2ex.com':'v2ex.png', 'taobao.com':'taobao.ico',
+  'douban.com':'douban.svg', 'sspai.com':'sspai.ico', 'v2ex.com':'v2ex.png', 'taobao.com':'taobao.ico',
   'x.com':'x.png', 'twitter.com':'x.png', 'reddit.com':'reddit.svg',
   'discord.com':'discord.png', 'discord.gg':'discord.png', 'telegram.org':'telegram.png', 't.me':'telegram.png',
   'wikipedia.org':'wikipedia.png', 'stackoverflow.com':'stackoverflow.svg',
@@ -45,7 +45,7 @@ function renderSiteIcon(badge, site) {
   const favicon = new URL('/favicon.ico',url.origin).href;
   const source = site.icon || (localIcon ? `icons/${localIcon}` : favicon);
   const image = document.createElement('img');
-  image.alt = ''; image.className = 'site-logo'; image.width = 27; image.height = 27;
+  image.alt = ''; image.className = 'site-logo'; image.width = 48; image.height = 48;
   image.referrerPolicy = 'no-referrer'; image.decoding = 'async';
   badge.textContent = site.badge || [...site.name][0];
   image.onload = () => { badge.classList.add('has-logo'); badge.replaceChildren(image); };
@@ -77,6 +77,63 @@ try { validate(config); } catch (error) { document.body.textContent = `配置错
 let selectedEngine = config.defaultEngine;
 let draft;
 let activeTab = 'sites';
+const engineSlider = document.createElement('span');
+engineSlider.className = 'engine-slider';
+engineSlider.hidden = true;
+engineSlider.setAttribute('aria-hidden','true');
+const reducedEngineMotion = matchMedia('(prefers-reduced-motion: reduce)');
+let engineSlideAnimation;
+function moveEngineSlider(animate = false) {
+  const group = $('engine-options');
+  const active = group.querySelector('button[aria-pressed="true"]');
+  if (!active) return;
+  const rail = group.getBoundingClientRect();
+  const target = active.getBoundingClientRect();
+  const from = engineSlider.hidden ? null : engineSlider.getBoundingClientRect();
+  const x = target.left - rail.left, y = target.top - rail.top;
+  const transform = (left,top,sx = 1,sy = 1) => `translate(${left}px,${top}px) scale(${sx},${sy})`;
+  engineSlideAnimation?.cancel();
+  engineSlider.hidden = false;
+  engineSlider.style.width = `${target.width}px`;
+  engineSlider.style.height = `${target.height}px`;
+  engineSlider.style.transform = transform(x,y);
+  if (!animate || !from || reducedEngineMotion.matches) return;
+  const startX = from.left - rail.left, startY = from.top - rail.top;
+  // Read the live rectangle before cancelling so rapid changes never jump back.
+  engineSlideAnimation = engineSlider.animate([
+    {transform:transform(startX,startY,from.width / target.width,from.height / target.height)},
+    {offset:.62,transform:transform(startX + (x - startX) * .92 - target.width * .02,startY + (y - startY) * .92 + target.height * .02,1.04,.96)},
+    {offset:.82,transform:transform(x + target.width * .01,y - target.height * .01,.98,1.02)},
+    {transform:transform(x,y)}
+  ],{duration:280,easing:'cubic-bezier(0.77,0,0.175,1)'});
+}
+const engineResize = new ResizeObserver(() => moveEngineSlider());
+reducedEngineMotion.addEventListener('change',() => moveEngineSlider());
+function renderEngines() {
+  engineSlideAnimation?.cancel();
+  engineResize.disconnect();
+  engineSlider.hidden = true;
+  const group = $('engine-options');
+  group.replaceChildren(engineSlider);
+  config.engines.forEach(engine => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = engine.name;
+    button.setAttribute('aria-pressed',String(engine.id === selectedEngine));
+    button.onclick = event => {
+      if (selectedEngine !== engine.id) {
+        selectedEngine = engine.id;
+        group.querySelectorAll('button').forEach(item => item.setAttribute('aria-pressed',String(item === button)));
+        moveEngineSlider(event.detail > 0);
+      }
+      $('search-input').focus();
+    };
+    group.append(button);
+    engineResize.observe(button);
+  });
+  engineResize.observe(group);
+  moveEngineSlider();
+}
 function render() {
   $('brand-name').textContent = config.name;
   document.title = `${config.name} · 个人导航`;
@@ -93,12 +150,11 @@ function render() {
   $('theme-toggle').setAttribute('aria-label', dark ? '切换日间模式' : '切换夜间模式');
   const bg = dark ? config.appearance.dark : config.appearance.light;
   document.documentElement.style.setProperty('--page', bg);
-  document.body.classList.toggle('custom-background', bg.toLowerCase() !== (dark ? '#121817' : '#f4f6f5'));
+  document.body.classList.toggle('custom-background', ![dark ? '#1c1c1e' : '#f5f5f7',dark ? '#121817' : '#f4f6f5'].includes(bg.toLowerCase()));
   const withImage = config.appearance.type === 'image' && !!config.appearance.image;
   document.body.classList.toggle('has-image', withImage);
   document.body.style.setProperty('--background-image', withImage ? `url("${config.appearance.image}")` : 'none');
-  $('engine-options').replaceChildren();
-  config.engines.forEach(engine => { const b = document.createElement('button'); b.type = 'button'; b.textContent = engine.name; b.setAttribute('aria-pressed',String(engine.id === selectedEngine)); b.onclick = () => { selectedEngine = engine.id; render(); $('search-input').focus(); }; $('engine-options').append(b); });
+  renderEngines();
   $('tile-grid').replaceChildren();
   config.sites.forEach(site => {
     const a = document.createElement('a'); a.className = 'tile'; a.href = site.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.setAttribute('aria-label',`${site.name}，在新标签页打开`);
