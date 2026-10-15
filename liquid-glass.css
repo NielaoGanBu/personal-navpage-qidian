@@ -1,0 +1,126 @@
+/*
+ * Adapted from greyd097/yzrt, 纯CSS液态玻璃/css/styles.css.
+ * Source commit: 2cae7d6a61d6a019a5c40bda05dc6a065ae7e246.
+ * GPL-2.0; see LICENSES/yzrt-GPL-2.0.txt. Modified 2026-10-15 for Qidian:
+ * optical layers are separated from text; add dark/reduced-transparency modes.
+ */
+:root {
+  --glass-fill: rgb(255 255 255 / .12);
+  --glass-bright: rgb(255 255 255 / .92);
+  --glass-soft: rgb(255 255 255 / .55);
+  --glass-dark: rgb(30 43 57 / .3);
+  --glass-border: rgb(51 51 51 / .12);
+  --glass-drop: rgb(33 47 62 / .12);
+  --glass-page-light: #f5f7f9;
+  --glass-page-shade: #e3e8ed;
+}
+:root[data-theme="dark"] {
+  --glass-fill: rgb(255 255 255 / .025);
+  --glass-bright: rgb(255 255 255 / .32);
+  --glass-soft: rgb(255 255 255 / .12);
+  --glass-dark: rgb(0 0 0 / .7);
+  --glass-border: rgb(255 255 255 / .13);
+  --glass-drop: rgb(0 0 0 / .35);
+  --glass-page-light: #262c34;
+  --glass-page-shade: #15191f;
+}
+body[data-material="glass"] { --muted: #54545c; }
+:root[data-theme="dark"] body[data-material="glass"] { --muted: #d0d0d6; --control-line: #a0a0aa; }
+body[data-material="glass"]:not(.has-image):not(.custom-background) {
+  background-image:
+    radial-gradient(ellipse at 12% 0%,var(--glass-page-light),transparent 55%),
+    radial-gradient(ellipse at 95% 80%,var(--glass-page-light),transparent 65%),
+    linear-gradient(125deg,var(--glass-page-shade),var(--glass-page-light));
+}
+:is(.topbar,.search-box,.engine-options,.tile-badge) {
+  position: relative;
+  isolation: isolate;
+}
+.engine-slider { isolation: isolate; }
+:is(.topbar,.search-box,.engine-options,.engine-slider,.tile-badge)::before,
+:is(.topbar,.search-box,.engine-options,.engine-slider,.tile-badge)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+/* yzrt's low blur and opposing inset highlights form the glass edge. */
+:is(.topbar,.search-box,.engine-options,.engine-slider,.tile-badge)::before {
+  z-index: -2;
+  background: var(--glass-fill);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  box-shadow:
+    inset 2px -2px 1px -1px var(--glass-bright),
+    inset -2px 2px 1px -1px var(--glass-bright),
+    inset 6px -6px 1px -6px var(--glass-soft),
+    inset -6px 6px 1px -6px var(--glass-soft),
+    inset 0 0 2px var(--glass-dark);
+}
+/* Keep the blurred diagonal sheen behind the original text and logo. */
+:is(.topbar,.search-box,.engine-options,.engine-slider,.tile-badge)::after {
+  z-index: -1;
+  inset: 2px;
+  border: 1px solid var(--glass-soft);
+  background: linear-gradient(45deg,var(--glass-soft),transparent 25%,transparent 75%,var(--glass-soft));
+  filter: blur(1px);
+}
+body[data-material="glass"] :is(.topbar,.search-box,.engine-options,.engine-slider,.tile-badge) {
+  background: transparent;
+  border-color: var(--glass-border);
+  box-shadow: 0 4px 8px var(--glass-drop),0 12px 28px var(--glass-drop);
+}
+body[data-material="glass"] :is(.topbar,.search-box,.engine-options,.engine-slider,.tile-badge)::before,
+body[data-material="glass"] :is(.topbar,.search-box,.engine-options,.engine-slider,.tile-badge)::after {
+  opacity: 1;
+}
+body[data-material="glass"] .topbar {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+body[data-material="glass"] .engine-options { box-shadow: 0 2px 6px var(--glass-drop); }
+body[data-material="glass"] .engine-slider {
+  background: var(--chrome);
+  border-color: var(--control-line);
+}
+:root[data-theme="dark"] body[data-material="glass"] .tile-badge.has-logo {
+  background: rgb(255 255 255 / .9);
+}
+body:is(.has-image,.custom-background)[data-material="glass"] :is(.topbar,.search-box,.engine-options) {
+  background: var(--surface);
+}
+body[data-material="glass"] .search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft),0 8px 22px var(--glass-drop);
+}
+body[data-material="glass"] .search-submit,
+body[data-material="glass"] .brand-mark {
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / .65),
+    inset 0 -2px 3px rgb(0 0 0 / .15),
+    0 3px 8px var(--glass-drop);
+  border: 1px solid rgb(255 255 255 / .35);
+}
+@media (hover: hover) and (pointer: fine) {
+  body[data-material="glass"] .tile:hover .tile-badge {
+    box-shadow: 0 8px 14px var(--glass-drop),0 18px 30px var(--glass-drop);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  body[data-material="glass"] :is(.topbar,.search-box,.engine-options,.engine-slider,.tile-badge) {
+    background: var(--surface);
+    border-color: var(--control-line);
+  }
+  :is(.topbar,.search-box,.engine-options,.engine-slider,.tile-badge)::before,
+  :is(.topbar,.search-box,.engine-options,.engine-slider,.tile-badge)::after {
+    display: none;
+  }
+}
+@supports not (backdrop-filter: blur(2px)) {
+  body[data-material="glass"] :is(.topbar,.search-box,.engine-options,.engine-slider,.tile-badge) {
+    background: var(--surface);
+  }
+}

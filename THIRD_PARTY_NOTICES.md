@@ -1,8 +1,14 @@
 # 第三方资源说明
 
-项目根目录的 MIT License 适用于网站代码及原创文档，不授予第三方平台的商标或品牌图标权利。图标仅用于标识导航链接对应的网站，项目与这些平台没有隶属或背书关系。
+项目根目录的 MIT License 适用于原有网站代码及原创文档；新增派生样式的许可另见下文。MIT 不适用于第三方派生样式，也不授予第三方平台的商标或品牌图标权利。图标仅用于标识导航链接对应的网站，项目与这些平台没有隶属或背书关系。
 
-## 来源及许可范围
+## 液态玻璃样式
+
+`liquid-glass.css` 参考并适配自 [greyd097/yzrt](https://gitee.com/greyd097/yzrt/tree/master/) 的 `纯CSS液态玻璃/css/styles.css`，源提交 `2cae7d6a61d6a019a5c40bda05dc6a065ae7e246`，保留上游 [GPL-2.0 许可](LICENSES/yzrt-GPL-2.0.txt)。2026-10-15 的修改包括光学层与文字分离、导航组件适配、深色主题、减少透明度与浏览器降级，移除演示用网格及材质切换控件。
+
+原有代码的 MIT 授权不变；含该派生样式的整合版本按 GPL-2.0 条件整体分发，原独立 MIT 文件保留其授权和版权声明。分发时保留许可、归属说明和相应源码，不能将派生样式或组合版本标成 MIT-only。
+
+## 品牌图标来源及许可范围
 
 哔哩哔哩、知乎、豆瓣、Reddit 和 Stack Overflow 的 SVG 来自 Simple Icons，前三者仅适配品牌颜色。其项目许可证与图标各自的品牌条款需要分别查看；项目级 CC0 不代表所有品牌图标均可不受限制使用。参考 [Simple Icons LICENSE](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md) 和 [DISCLAIMER](https://github.com/simple-icons/simple-icons/blob/develop/DISCLAIMER.md)。
 
