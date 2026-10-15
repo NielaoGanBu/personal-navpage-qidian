@@ -109,7 +109,28 @@ body[data-material="glass"] .brand-mark {
     box-shadow: 0 8px 14px var(--glass-drop),0 18px 30px var(--glass-drop);
   }
 }
+.tile-glow { display: none; }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  body[data-material="glass"] .tile-glow {
+    display: block;
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .tile-glow-light {
+    display: block;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle,rgb(255 255 255 / .9),rgb(255 255 255 / .3) 35%,transparent 70%);
+    opacity: 0;
+    transition: opacity var(--transition);
+  }
+  body[data-material="glass"] :is(.site-logo,.tile-fallback) { position: relative; z-index: 1; }
+}
 @media (prefers-reduced-transparency: reduce) {
+  body[data-material="glass"] .tile-glow { display: none; }
   body[data-material="glass"] :is(.topbar,.search-box,.engine-options,.engine-slider,.tile-badge) {
     background: var(--surface);
     border-color: var(--control-line);

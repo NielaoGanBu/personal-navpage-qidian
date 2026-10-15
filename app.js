@@ -45,14 +45,49 @@ function renderSiteIcon(badge, site) {
   const favicon = new URL('/favicon.ico',url.origin).href;
   const source = site.icon || (localIcon ? `icons/${localIcon}` : favicon);
   const image = document.createElement('img');
+  const glow = document.createElement('span');
+  glow.className = 'tile-glow';
+  glow.innerHTML = '<span class="tile-glow-light"></span>';
   image.alt = ''; image.className = 'site-logo'; image.width = 48; image.height = 48;
   image.referrerPolicy = 'no-referrer'; image.decoding = 'async';
-  badge.textContent = site.badge || [...site.name][0];
-  image.onload = () => { badge.classList.add('has-logo'); badge.replaceChildren(image); };
+  const fallback = document.createElement('span');
+  fallback.className = 'tile-fallback';
+  fallback.textContent = site.badge || [...site.name][0];
+  badge.replaceChildren(fallback,glow);
+  image.onload = () => { badge.classList.add('has-logo'); badge.replaceChildren(image,glow); };
   let triedFavicon = source === favicon;
   image.onerror = () => { if (!triedFavicon) { triedFavicon = true; image.src = favicon; } };
   image.src = source;
 }
+const tileGlowPointer = matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
+let tileGlowFrame = 0;
+let tileGlowPoint;
+function clearTileGlow() {
+  cancelAnimationFrame(tileGlowFrame);
+  tileGlowFrame = 0;
+  document.querySelectorAll('.tile-glow-light').forEach(light => { light.style.opacity = '0'; });
+}
+document.addEventListener('pointermove', event => {
+  if (!tileGlowPointer.matches || event.pointerType !== 'mouse' || $('settings-dialog').open) return;
+  tileGlowPoint = {x:event.clientX,y:event.clientY};
+  if (tileGlowFrame) return;
+  tileGlowFrame = requestAnimationFrame(() => {
+    tileGlowFrame = 0;
+    // Read all bounds before painting; the light follows directly without a trailing animation.
+    const lights = [...document.querySelectorAll('.tile-glow-light')].map(light => ({light,rect:light.parentElement.getBoundingClientRect()}));
+    lights.forEach(({light,rect}) => {
+      const x = tileGlowPoint.x - rect.left, y = tileGlowPoint.y - rect.top;
+      const distance = Math.hypot(Math.max(-x,0,x-rect.width),Math.max(-y,0,y-rect.height));
+      const strength = Math.max(0,1-distance/100);
+      if (strength) light.style.transform = `translate(${x-80}px,${y-80}px)`;
+      light.style.opacity = String(strength);
+    });
+  });
+}, {passive:true});
+document.addEventListener('pointerleave',clearTileGlow);
+document.addEventListener('scroll',clearTileGlow,{passive:true,capture:true});
+window.addEventListener('blur',clearTileGlow);
+tileGlowPointer.addEventListener('change',clearTileGlow);
 function validate(c) {
   if (!c || c.version !== 1 || typeof c.name !== 'string' || !c.name.trim() || c.name.length > 30) throw Error('请填写导航页名称（不超过 30 字）。');
   if (c.showEngineLabel === undefined) c.showEngineLabel = true;
