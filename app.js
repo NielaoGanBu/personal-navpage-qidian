@@ -178,6 +178,7 @@ function renderEngines() {
   moveEngineSlider();
 }
 function render() {
+  hideSearchSuggestions();
   document.body.classList.toggle('compact-layout', config.appearance.compact);
   $('brand-name').textContent = config.name;
   document.title = `${config.name} · 个人导航`;
@@ -210,7 +211,107 @@ function render() {
   $('tile-grid').hidden = config.sites.length === 0;
 }
 $('theme-toggle').onclick = () => { const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; try { localStorage.setItem('nav-theme',theme); } catch { toast('主题已切换，但浏览器禁止保存偏好。'); } render(); };
-$('search-form').onsubmit = event => { event.preventDefault(); const q = $('search-input').value.trim(); if (!q) return $('search-input').focus(); const engine = config.engines.find(e => e.id === selectedEngine); window.open(engine.url.replaceAll('{q}',encodeURIComponent(q)),'_blank','noopener,noreferrer'); };
+let searchItems = [];
+let activeSearchIndex = 0;
+let searchComposing = false;
+const normalizeSearch = value => value.normalize('NFKC').toLowerCase().trim();
+function getSearchItems(query) {
+  const q = normalizeSearch(query);
+  if (!q) return [];
+  const terms = q.split(/\s+/);
+  const matches = config.sites.map((site,index) => {
+    const name = normalizeSearch(site.name), host = new URL(site.url).hostname.replace(/^www\./,'');
+    const fields = [name,host];
+    const matched = terms.every(term => fields.some(value => value.includes(term)));
+    const rank = fields.includes(q) ? 0 : fields.some(value => value.startsWith(q)) ? 1 : 2;
+    return {site,index,rank,matched};
+  }).filter(item => item.matched).sort((a,b) => a.rank - b.rank || a.index - b.index).slice(0,5);
+  return [...matches,{engine:config.engines.find(engine => engine.id === selectedEngine)}];
+}
+function hideSearchSuggestions() {
+  $('search-suggestions').hidden = true;
+  $('search-input').setAttribute('aria-expanded','false');
+  $('search-input').removeAttribute('aria-activedescendant');
+  searchItems = [];
+  activeSearchIndex = 0;
+  $('search-form').querySelector('button[type="submit"]').setAttribute('aria-label','搜索');
+}
+function selectSearchItem(index,scroll = false) {
+  activeSearchIndex = index;
+  [...$('search-results').children].forEach((option,i) => option.setAttribute('aria-selected',String(i === index)));
+  const option = $('search-results').children[index];
+  if (!option) return;
+  $('search-input').setAttribute('aria-activedescendant',option.id);
+  const item = searchItems[index];
+  $('search-form').querySelector('button[type="submit"]').setAttribute('aria-label',item.site ? `打开 ${item.site.name}` : `使用 ${item.engine.name} 搜索`);
+  if (scroll) option.scrollIntoView({block:'nearest'});
+}
+function renderSearchSuggestions() {
+  const query = $('search-input').value.trim();
+  if (searchComposing || document.activeElement !== $('search-input') || $('settings-dialog').open) return hideSearchSuggestions();
+  searchItems = getSearchItems(query);
+  if (!searchItems.length) return hideSearchSuggestions();
+  $('search-results').replaceChildren();
+  searchItems.forEach((item,index) => {
+    const option = document.createElement('div');
+    option.id = `search-option-${index}`; option.className = 'search-result'; option.setAttribute('role','option');
+    const icon = document.createElement('span'); icon.className = 'search-result-icon'; icon.innerHTML = svg(item.site ? 'external' : 'search');
+    const copy = document.createElement('span'); copy.className = 'search-result-copy';
+    const name = document.createElement('span'); name.className = 'search-result-name';
+    const detail = document.createElement('span'); detail.className = 'search-result-detail';
+    name.textContent = item.site ? item.site.name : `搜索“${query}”`;
+    detail.textContent = item.site ? new URL(item.site.url).hostname : `使用 ${item.engine.name} 搜索互联网`;
+    option.setAttribute('aria-label',item.site ? `${item.site.name}，${detail.textContent}，在新标签页打开` : `使用 ${item.engine.name} 搜索 ${query}`);
+    copy.append(name,detail); option.append(icon,copy);
+    option.onpointermove = event => { if (event.pointerType === 'mouse') selectSearchItem(index); };
+    option.onclick = () => openSearchItem(item);
+    $('search-results').append(option);
+  });
+  $('search-suggestions').hidden = false;
+  $('search-input').setAttribute('aria-expanded','true');
+  selectSearchItem(0);
+}
+function openSearchItem(item) {
+  const query = $('search-input').value.trim();
+  if (!query || searchComposing) return;
+  const url = item.site ? item.site.url : item.engine.url.replaceAll('{q}',encodeURIComponent(query));
+  window.open(url,'_blank','noopener,noreferrer');
+  hideSearchSuggestions();
+}
+$('search-form').onsubmit = event => {
+  event.preventDefault();
+  if (searchComposing) return;
+  const query = $('search-input').value.trim();
+  if (!query) return $('search-input').focus();
+  openSearchItem(searchItems[activeSearchIndex] || getSearchItems(query)[0]);
+};
+$('search-input').addEventListener('input',event => { if (event.isComposing) hideSearchSuggestions(); else renderSearchSuggestions(); });
+$('search-input').addEventListener('focus',renderSearchSuggestions);
+$('search-input').addEventListener('compositionstart',() => { searchComposing = true; hideSearchSuggestions(); });
+$('search-input').addEventListener('compositionend',() => { searchComposing = false; renderSearchSuggestions(); });
+$('search-input').addEventListener('keydown',event => {
+  if (event.isComposing || searchComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
+  if (event.key === 'Escape') {
+    event.preventDefault(); $('search-input').value = ''; hideSearchSuggestions();
+  } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    if ($('search-suggestions').hidden) { renderSearchSuggestions(); if (event.key === 'ArrowUp' && searchItems.length) selectSearchItem(searchItems.length-1,true); }
+    else selectSearchItem((activeSearchIndex + (event.key === 'ArrowDown' ? 1 : -1) + searchItems.length) % searchItems.length,true);
+  } else if (event.key === 'Enter' && event.shiftKey) {
+    event.preventDefault();
+    const items = getSearchItems($('search-input').value);
+    if (items.length) openSearchItem(items.at(-1));
+  }
+});
+$('search-results').addEventListener('mousedown',event => event.preventDefault());
+$('search-control').addEventListener('focusout',event => { if (!$('search-control').contains(event.relatedTarget)) hideSearchSuggestions(); });
+document.addEventListener('pointerdown',event => { if (!$('search-control').contains(event.target)) hideSearchSuggestions(); });
+document.addEventListener('keydown',event => {
+  const target = event.target;
+  if (event.key !== '/' || event.defaultPrevented || event.isComposing || event.ctrlKey || event.metaKey || event.altKey || $('settings-dialog').open || $('discard-dialog').open) return;
+  if (target instanceof Element && (target.closest('input,textarea,select') || target.isContentEditable)) return;
+  event.preventDefault(); $('search-input').focus();
+});
 function field(label, value, key, max) { const wrap = document.createElement('label'); wrap.className = 'field'; wrap.textContent = label; const input = document.createElement('input'); input.dataset.field = key; input.value = value; if (max) input.maxLength = max; wrap.append(input); return wrap; }
 function rowButton(icon, label, click, disabled = false) { const b = document.createElement('button'); b.type = 'button'; b.className = `icon-button ${icon === 'trash' ? 'remove-button' : ''}`; b.innerHTML = svg(icon); b.setAttribute('aria-label',label); b.title = label; b.disabled = disabled; b.onclick = click; return b; }
 function collectDraft() {
