@@ -91,6 +91,20 @@ https://www.bing.com/search?q={q}
 
 图标来源见 [icons/sources.json](icons/sources.json)，许可范围见 [第三方资源说明](THIRD_PARTY_NOTICES.md)。
 
+## 浏览器新标签页扩展
+
+桌面 Chrome / Edge 可加载离线扩展，让每次新建普通标签页直接打开起点。扩展内置页面、样式、脚本和品牌图标，正常启动不访问服务器；核心资源缺失、初始化失败或 8 秒未就绪时，当前标签页回退到 `https://www.nyqking.top/`。单个网站图标失败不触发回退，不申请标签页、书签或网站访问权限。
+
+从源码生成安装包（只需要 Python 标准库）：
+
+```bash
+python3 scripts/package-extension.py
+```
+
+生成 `dist/qidian-newtab/`、`dist/qidian-newtab-1.0.0.zip` 和 `dist/SHA256SUMS.txt`。解压 ZIP 后，在 `chrome://extensions/` 或 `edge://extensions/` 开启开发者模式，点击「加载已解压的扩展程序」，选择包含 `manifest.json` 的文件夹；首次询问是否保留新标签页更改时，选择保留。无痕新标签页不支持此替换。详细安装、更新与数据迁移说明见 [extension/README.md](extension/README.md)。
+
+扩展设置与在线页分别保存在各自来源下，可以通过导出、导入配置迁移。扩展中的「使用扩展默认配置」会恢复随包附带的 `config.js`，保存后才生效。
+
 ## 部署
 
 将以下文件上传到静态网站根目录，保持相对路径：
@@ -100,6 +114,7 @@ index.html
 styles.css
 liquid-glass.css
 app.js
+theme.js
 config.js
 icons/
 LICENSE
@@ -109,7 +124,7 @@ THIRD_PARTY_NOTICES.md
 
 整份 `icons/` 都应上传。使用现有网站面板、Nginx 或其他静态文件服务即可，无需执行构建命令。
 
-更新已经部署的站点时，**保留自定义的 `config.js` 和用户资源**，更新 `index.html`、`styles.css`、`liquid-glass.css`、`app.js` 与 `icons/`，并保留随代码提供的许可文件。已有本机设置继续保留，旧版默认背景颜色不会被自动改写。
+更新已经部署的站点时，**保留自定义的 `config.js` 和用户资源**，更新 `index.html`、`styles.css`、`liquid-glass.css`、`app.js`、`theme.js` 与 `icons/`，并保留随代码提供的许可文件。已有本机设置继续保留，旧版默认背景颜色不会被自动改写。
 
 [Releases](https://github.com/NielaoGanBu/personal-navpage-qidian/releases) 可下载已发布部署包；要使用本次改版，请确认发布包包含这些更新，或直接使用当前 `main` 分支源码。
 
@@ -180,4 +195,4 @@ pnpm exec playwright install chromium
 pnpm test
 ```
 
-已有 Google Chrome 时，也可使用 `PLAYWRIGHT_CHANNEL=chrome pnpm test`，无需另外下载 Chromium。测试会启动临时本机 HTTP 服务及独立浏览器上下文，不读取日常浏览器配置。覆盖服务器配置草稿、保存与放弃、关闭方式、撤销删除、旧配置兼容、紧凑模式导入导出、收藏网站搜索、键盘与触屏操作、输入法组合输入及手机布局。
+普通网页回归检查可使用已有 Google Chrome，执行 `PLAYWRIGHT_CHANNEL=chrome node --test tests/browser.test.cjs`；扩展检查使用 Playwright 自带的 Chromium 与临时浏览器配置。可通过 `PYTHON=/path/to/python3` 指定打包测试使用的 Python。完整测试包含扩展加载检查，需要安装上面的 Playwright Chromium。测试会启动临时本机 HTTP 服务及独立浏览器上下文，不读取日常浏览器配置。覆盖服务器配置草稿、保存与放弃、关闭方式、撤销删除、旧配置兼容、紧凑模式导入导出、收藏网站搜索、键盘与触屏操作、输入法组合输入、手机布局、扩展断网启动、配置保存与在线回退。

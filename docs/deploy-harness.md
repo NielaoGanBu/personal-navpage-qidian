@@ -11,7 +11,7 @@
 
 请对照本次 Release 附带的 SHA256SUMS.txt 核对部署包校验值。
 
-先核对部署包、阅读其中的 README.md，确认包含 index.html、styles.css、liquid-glass.css、app.js、config.js、nginx.conf，以及 icons/ 中的 23 个图标和 sources.json。若文件缺失或校验不匹配，说明实际差异再处理。
+先核对部署包、阅读其中的 README.md，确认包含 index.html、styles.css、liquid-glass.css、app.js、theme.js、config.js、nginx.conf，以及 icons/ 中的 23 个图标和 sources.json。若文件缺失或校验不匹配，说明实际差异再处理。
 
 图标已预存。完整部署 icons/ 文件夹，使用包内 app.js 的域名匹配规则；图标地址留空时使用匹配的本地图标。服务器运行时无需访问海外平台下载图标。未预存网站的 favicon 由访客浏览器加载，请按现有逻辑保留。此次只部署现成网站，不重新设计页面、不更改默认磁贴、不加入登录或其他功能。
 
@@ -19,14 +19,14 @@
 
 1. 先只读检查当前 Web 服务、网站配置、80/443 端口、域名解析和目标目录；已有站点通过访问结果及近期日志确认正常流程。如果已部署本导航页，沿用它的目录、域名和入口进行更新；首次部署则优先沿用现有 Nginx、网站面板或其他可提供静态文件的 Web 服务，新增独立站点。空白服务器可安装 Nginx。不要直接覆盖整个 Nginx 主配置或占用已有网站入口。缺少域名、部署包路径或入口有冲突时，汇总必要问题一次询问；一般实现细节自行判断。
 2. 修改前，给受影响的站点目录、配置和入口创建带时间的备份，记录路径，并根据真实路径准备可执行的回退命令。对原本不存在的目录或入口记录新增项。保留服务器已有网站、证书、数据库及其他服务。
-3. 解压到临时工作目录检查内容。首次部署把 index.html、styles.css、liquid-glass.css、app.js、config.js 及完整 icons/ 部署到站点目录；更新已部署导航页时，仅更新 index.html、styles.css、liquid-glass.css、app.js 和包内图标，保留原有 config.js 及用户自备资源。旧配置缺少新增字段时由代码补充默认值，不需要覆盖或改写原有配置。无既定路径时使用 /var/www/personal-nav。同时保留 LICENSE、LICENSES/ 与 THIRD_PARTY_NOTICES.md；材质派生样式与组合分发条款见 README。README.md 和 nginx.conf 作为部署参考；nginx.conf 中的 nav.example.com 是示例，按实际域名和现有服务结构调整。设置 Web 服务可读取的文件权限。若使用子路径，确保入口末尾斜杠及 CSS、脚本、图标的相对路径正常。
+3. 解压到临时工作目录检查内容。首次部署把 index.html、styles.css、liquid-glass.css、app.js、theme.js、config.js 及完整 icons/ 部署到站点目录；更新已部署导航页时，仅更新 index.html、styles.css、liquid-glass.css、app.js、theme.js 和包内图标，保留原有 config.js 及用户自备资源。旧配置缺少新增字段时由代码补充默认值，不需要覆盖或改写原有配置。无既定路径时使用 /var/www/personal-nav。同时保留 LICENSE、LICENSES/ 与 THIRD_PARTY_NOTICES.md；材质派生样式与组合分发条款见 README。README.md 和 nginx.conf 作为部署参考；nginx.conf 中的 nav.example.com 是示例，按实际域名和现有服务结构调整。设置 Web 服务可读取的文件权限。若使用子路径，确保入口末尾斜杠及 CSS、脚本、图标的相对路径正常。
 4. 配置正确的站点根目录、入口 index.html 和静态文件类型，确保 config.js 更新后可重新验证缓存，沿用示例的 Cache-Control: no-cache 即可。域名访问优先复用可用的 HTTPS 配置；缺少证书时说明当前 HTTP/HTTPS 状态和后续所需操作，不将示例证书或占位域名当作已配置。
 5. 如需调整防火墙，只处理网站必需端口，保留现有规则及 SSH 访问。云安全组或 DNS 无操作权限时，明确所需修改，不声称已完成。
 6. 使用 Nginx 时先执行 nginx -t，通过后优先 reload。本任务授权正常部署及必要的平滑重载，无需反复确认。若确实需要重启正在使用的服务，先说明原因和预计中断时间，单独询问是否现在重启，获得答复后再执行。
 
 ## 做一次有效验证
 
-* 核对更新的文件与包内文件一致；升级时单独确认保留的 config.js 与备份一致，记录这一预期差异。用正确的域名/Host 检查首页、CSS、app.js、config.js 和 23 个本地图标，确认返回成功且内容为预期文件，而非默认欢迎页或错误页。
+* 核对更新的文件与包内文件一致；升级时单独确认保留的 config.js 与备份一致，记录这一预期差异。用正确的域名/Host 检查首页、CSS、app.js、theme.js、config.js 和 23 个本地图标，确认返回成功且内容为预期文件，而非默认欢迎页或错误页。
 * 在能力允许的范围内验证实际访问地址，包括 DNS、HTTP/HTTPS、证书及静态资源加载。服务器本机的请求只能证明服务器侧链路，不代替外网验证。
 * 若已有浏览器工具，实际检查页面渲染、图标、搜索目标 URL 及新标签页打开、磁贴跳转、日夜切换、本机设置保存后刷新、背景上传和配置导出。确认「搜索引擎」标签可隐藏、三行文字可编辑且刷新后保留，并检查手机布局。保持检查前的配置及浏览器偏好，测试时不发布测试配置到正式站点。若没有浏览器工具，明确哪些项目尚未验证，提供简短的用户检查步骤；不为测试额外安装完整浏览器环境。
 * 改动前已正常使用的站点，部署后检查其原有访问结果及有无新增错误。已通过的检查无需重复执行。

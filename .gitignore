@@ -11,6 +11,7 @@ private/
 Thumbs.db
 .vscode/
 node_modules/
+dist/
 
 # 发布包通过 GitHub Releases 提供
 *.zip
