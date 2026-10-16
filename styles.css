@@ -199,6 +199,27 @@ input[type="color"], .upload-area { border-color: var(--control-line); }
 .checkbox-field input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
 .field-hint { color: var(--muted); font-size: 12px; line-height: 1.7; margin: 0 0 15px; }
 .icon-url-field { margin-top: 10px; }
+.undo-notice { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 6px 12px; background: var(--surface-soft); border-radius: 12px; font-size: 13px; }
+.undo-notice > span { min-width: 0; overflow-wrap: anywhere; }
+.undo-notice button { flex-shrink: 0; color: var(--accent); }
+.discard-dialog { width: min(420px,calc(100% - 32px)); padding: 26px; }
+.discard-dialog p { color: var(--muted); line-height: 1.7; margin: 12px 0 22px; }
+.discard-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
+.compact-layout .topbar { margin-top: 20px; min-height: 60px; }
+.compact-layout .search-section { margin: 24px auto 16px; }
+.compact-layout .intro { margin-bottom: 16px; }
+.compact-layout h1 { font-size: 32px; margin: 8px 0 6px; }
+.compact-layout .intro p { font-size: 15px; }
+.compact-layout .search-box { height: 64px; }
+.compact-layout .search-submit { width: 44px; height: 44px; border-radius: 14px; }
+.compact-layout .engine-line { margin-top: 12px; gap: 8px; }
+.compact-layout .tile-grid { row-gap: 6px; }
+.compact-layout .tile { padding: 8px 4px; gap: 8px; }
+.compact-layout .tile-badge { width: 60px; height: 60px; border-radius: 18px; }
+.compact-layout .site-logo { width: 40px; height: 40px; }
+.compact-layout .tile-name { margin-bottom: 0; }
+.compact-layout .tile-description { display: none; }
+.compact-layout:is(.custom-background,.has-image) .intro { padding: 14px; }
 @media (hover: hover) {
   .quiet-button:hover, .icon-button:hover, .small-button:hover { background: var(--surface-soft); }
   #open-settings:hover, .text-button:hover { color: var(--accent); }
@@ -260,6 +281,15 @@ input[type="color"], .upload-area { border-color: var(--control-line); }
   .dialog-footer > div { margin-left: auto; }
   .panel-intro { align-items: flex-start; }
   .config-actions { gap: 12px; }
+  .compact-layout .topbar { margin-top: 12px; }
+  .compact-layout .search-section { margin-top: 20px; }
+  .compact-layout h1 { font-size: 28px; }
+  .compact-layout .search-box { height: 56px; padding-top: 5px; padding-bottom: 5px; }
+  .compact-layout .tile-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+  .compact-layout .tile-badge { width: 56px; height: 56px; border-radius: 17px; }
+  .compact-layout .site-logo { width: 36px; height: 36px; }
+  .compact-layout .tile-name { font-size: 13px; }
+  .compact-layout footer { margin-top: 16px; }
 }
 @media (prefers-reduced-transparency: reduce) {
   .topbar { background: var(--surface); backdrop-filter: none; }
