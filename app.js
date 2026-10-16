@@ -24,6 +24,11 @@ const clone = value => JSON.parse(JSON.stringify(value));
 const snapshot = value => JSON.stringify(value, (key,item) => item && typeof item === 'object' && !Array.isArray(item)
   ? Object.fromEntries(Object.entries(item).sort(([a],[b]) => a.localeCompare(b))) : item);
 const STORAGE = 'personal-nav-config-v1';
+const DEFAULT_CONFIG_LABEL = location.protocol === 'chrome-extension:' ? '扩展默认配置' : '服务器配置';
+if (location.protocol === 'chrome-extension:') {
+  $('use-server').textContent = '使用扩展默认配置';
+  document.querySelector('.local-note').textContent = '扩展内编辑 · 保存后立即生效。可通过导入、导出配置迁移设置。';
+}
 let toastTimer;
 function toast(message) { $('toast').textContent = message; $('toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('toast').hidden = true; }, 3500); }
 function validUrl(value) { try { const u = new URL(value); return ['http:','https:'].includes(u.protocol); } catch { return false; } }
@@ -110,7 +115,7 @@ function validate(c) {
 }
 let config = clone(window.NAV_CONFIG);
 let startupMessage = '';
-try { const stored = localStorage.getItem(STORAGE); if (stored) config = validate(JSON.parse(stored)); } catch { startupMessage = '本机配置无法读取，已使用服务器配置。'; }
+try { const stored = localStorage.getItem(STORAGE); if (stored) config = validate(JSON.parse(stored)); } catch { startupMessage = `本机配置无法读取，已使用${DEFAULT_CONFIG_LABEL}。`; }
 try { validate(config); } catch (error) { document.body.textContent = `配置错误：${error.message} 请恢复有效的 config.js。`; throw error; }
 let selectedEngine = config.defaultEngine;
 let draft;
@@ -409,7 +414,7 @@ $('settings-form').onsubmit = event => {
     if (useServer) localStorage.removeItem(STORAGE);
     else localStorage.setItem(STORAGE,content);
     config = clone(draft); selectedEngine = config.defaultEngine; render(); closeSettings();
-    toast(useServer ? '已使用服务器配置，本机修改已清除。' : '已保存，本机立即生效。');
+    toast(useServer ? `已使用${DEFAULT_CONFIG_LABEL}，本机修改已清除。` : '已保存，本机立即生效。');
   } catch (error) { showError(error.name === 'QuotaExceededError' ? Error('浏览器存储空间不足，请换一张较小的图片。') : error); }
 };
 $('background-upload').onchange = async event => {
@@ -444,7 +449,8 @@ $('use-server').onclick = () => {
   try {
     draft = validate(clone(window.NAV_CONFIG));
     clearSiteUndo(); renderEditors(); collectDraft(); serverDraftSnapshot = snapshot(draft); $('settings-error').hidden = true;
-    toast('已载入服务器配置，点击保存设置后生效。');
+    toast(`已载入${DEFAULT_CONFIG_LABEL}，点击保存设置后生效。`);
   } catch (error) { showError(error); }
 };
 render(); if (startupMessage) toast(startupMessage);
+window.NAV_APP_READY = true;

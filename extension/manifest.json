@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "起点 · 离线新标签页",
+  "version": "1.0.0",
+  "description": "新建标签页打开起点个人启动页，优先使用扩展内置离线资源，启动失败时回退到 www.nyqking.top。",
+  "minimum_chrome_version": "111",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkTCqzodqZZky0//9BRIXHDRCkNtg8Z+icgrPvfeouJr2iaXFXIAbw3Zeg1AT2DR5/Vi0XsmMBAhLG8nSu+oUE+zRLuBTMzP22NrdkOxt1WXyVRzCSotLQ1sNeVGHof+ZdamCBAhkl6dT9XZBW6usbyY1m6lABPkIT20GR8Yoo+HfpB0PCquW5ZCvUewCD1y9NyiUwhL9v1ogfYJRjWqgzuw5SLRME3Cmdj2vdMXID7T+5RkW/2SV7ksrkMjD25LwPaJdBlnoE5rqUs/1xu2FdjzZ7ZLx+dCR5ZJ9/xMcjvqiXKYBFJrO1qpGaHrecK+tpv73v77loPplRgDTHUukCwIDAQAB",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "icons": {
+    "16": "extension-icons/icon16.png",
+    "32": "extension-icons/icon32.png",
+    "48": "extension-icons/icon48.png",
+    "128": "extension-icons/icon128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'self';"
+  }
+}
