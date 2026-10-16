@@ -21,7 +21,13 @@
   <main>
     <section class="search-section" aria-label="上网搜索">
       <div class="intro"><span id="intro-eyebrow" class="eyebrow">YOUR PERSONAL START PAGE</span><h1 id="intro-title">从这里出发<span>。</span></h1><p id="intro-subtitle">搜你所想，去你常去。</p></div>
-      <form id="search-form" class="search-box" role="search"><span data-icon="search" class="search-symbol"></span><input id="search-input" name="q" type="search" placeholder="搜索任何你想了解的事物" aria-label="搜索关键词" autocomplete="off" required><button type="submit" class="search-submit" aria-label="搜索"><span data-icon="arrow"></span></button></form>
+      <div id="search-control" class="search-control">
+        <form id="search-form" class="search-box" role="search"><span data-icon="search" class="search-symbol"></span><input id="search-input" name="q" type="search" role="combobox" aria-autocomplete="list" aria-controls="search-results" aria-expanded="false" aria-describedby="search-help" placeholder="搜索网站或互联网" aria-label="搜索关键词" autocomplete="off" required><button type="submit" class="search-submit" aria-label="搜索"><span data-icon="arrow"></span></button></form>
+        <div id="search-suggestions" class="search-suggestions" hidden>
+          <div id="search-results" role="listbox" aria-label="已收藏的网站和网页搜索"></div>
+          <p id="search-help" class="search-help">↑↓ 选择 · Enter 打开 · Shift+Enter 网页搜索</p>
+        </div>
+      </div>
       <div class="engine-line"><span id="engine-label" class="engine-label">搜索引擎</span><div id="engine-options" class="engine-options" role="group" aria-label="选择搜索引擎"></div></div>
     </section>
     <section class="navigation" aria-labelledby="nav-heading"><div class="section-heading"><div><h2 id="nav-heading">常用网站</h2><span id="site-count" class="count"></span></div><button id="edit-sites" class="text-button" type="button"><span data-icon="edit"></span>编辑导航</button></div><div id="tile-grid" class="tile-grid"></div><div id="empty-state" class="empty-state" hidden><span data-icon="grid"></span><h3>留一个位置给你的常用网站</h3><p>在管理设置中添加第一个导航。</p><button id="add-first" class="primary-button" type="button">添加网站</button></div></section>

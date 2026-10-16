@@ -189,3 +189,171 @@ test('compact layout fits mobile widths and shows more shortcuts in the first sc
     }
   }
 });
+
+async function captureSearchOpens() {
+  await page.evaluate(() => { window.searchOpens = []; window.open = (url,target,features) => { window.searchOpens.push({url,target,features}); return null; }; });
+}
+async function openedSearches() { return page.evaluate(() => window.searchOpens); }
+
+test('search matches saved names and domains, including case and fullwidth input',async () => {
+  await visit(); await captureSearchOpens();
+  await page.keyboard.press('/');
+  assert.equal(await page.locator('#search-input').evaluate(el => el === document.activeElement),true);
+  await page.locator('#search-input').fill('ＧＩＴＨＵＢ');
+  assert.match(await page.getByRole('option').first().textContent(),/GitHub/);
+  assert.equal(await page.locator('#search-input').getAttribute('aria-expanded'),'true');
+  assert.equal(await page.locator('#search-input').getAttribute('aria-activedescendant'),'search-option-0');
+  await page.keyboard.press('Enter');
+  assert.deepEqual(await openedSearches(),[{url:'https://github.com/',target:'_blank',features:'noopener,noreferrer'}]);
+  assert.equal(page.url(),`${baseUrl}/`);
+  assert.equal(await page.locator('#search-input').getAttribute('aria-expanded'),'false');
+  await page.locator('#search-input').fill('mail.google.com');
+  assert.match(await page.getByRole('option').first().textContent(),/Gmail/);
+});
+
+test('exact names rank first and saved matches are limited to five',async () => {
+  const sites = Array.from({length:7},(_,i) => ({...defaults.sites[1],name:`GitHub 项目 ${i}`,url:`https://github.com/project-${i}`}));
+  sites.splice(3,0,defaults.sites[1]);
+  await visit({...defaults,sites});
+  await page.locator('#search-input').fill('github');
+  assert.equal(await page.getByRole('option').count(),6);
+  assert.equal(await page.getByRole('option').first().getAttribute('aria-label'),'GitHub，github.com，在新标签页打开');
+  assert.match(await page.getByRole('option').nth(1).textContent(),/项目 0/);
+  assert.match(await page.getByRole('option').last().textContent(),/使用 Bing 搜索互联网/);
+  await page.locator('#search-input').fill('github 项目 6');
+  assert.equal(await page.getByRole('option').count(),2);
+  assert.match(await page.getByRole('option').first().textContent(),/项目 6/);
+});
+
+test('opening a saved search result creates a new tab with no opener',async () => {
+  await context.route('https://github.com/**',route => route.fulfill({contentType:'text/html',body:'<title>Saved site</title>'}));
+  await visit(); await page.locator('#search-input').fill('github');
+  assert.equal(await page.getByRole('button',{name:'打开 GitHub',exact:true}).count(),1);
+  const newTab = context.waitForEvent('page');
+  await page.keyboard.press('Enter');
+  const opened = await newTab; await opened.waitForLoadState('domcontentloaded');
+  assert.equal(opened.url(),'https://github.com/');
+  assert.equal(await opened.evaluate(() => window.opener),null);
+  assert.equal(page.url(),`${baseUrl}/`);
+});
+
+test('ordinary queries search the selected engine with encoded keywords',async () => {
+  await visit(); await captureSearchOpens();
+  const query = 'C++ & 中文 / ?';
+  await page.locator('#search-input').fill(query);
+  assert.equal(await page.getByRole('option').count(),1);
+  await page.locator('#nav-heading').click();
+  await page.getByRole('button',{name:'Google',exact:true}).click();
+  assert.match(await page.getByRole('option').first().textContent(),/使用 Google 搜索互联网/);
+  await page.keyboard.press('Enter');
+  assert.equal((await openedSearches())[0].url,`https://www.google.com/search?q=${encodeURIComponent(query)}`);
+});
+
+test('arrow keys select matches or web search and Shift+Enter always searches the web',async () => {
+  await visit(); await captureSearchOpens();
+  await page.locator('#search-input').fill('g');
+  await page.keyboard.press('ArrowDown');
+  assert.match(await page.getByRole('option',{selected:true}).textContent(),/GitHub/);
+  await page.keyboard.press('Enter');
+  assert.equal((await openedSearches())[0].url,'https://github.com/');
+  await page.locator('#search-input').fill('github');
+  await page.keyboard.press('ArrowUp');
+  assert.match(await page.getByRole('option',{selected:true}).textContent(),/使用 Bing/);
+  await page.keyboard.press('Enter');
+  await page.locator('#search-input').fill('github');
+  await page.keyboard.press('Shift+Enter');
+  assert.equal((await openedSearches())[1].url,'https://www.bing.com/search?q=github');
+  assert.equal((await openedSearches())[2].url,'https://www.bing.com/search?q=github');
+});
+
+test('mouse and touch can open a non-first saved result or choose web search',async () => {
+  await page.setViewportSize({width:375,height:812});
+  await visit(); await captureSearchOpens();
+  await page.locator('#search-input').fill('g');
+  await page.getByRole('option').filter({hasText:'GitHub'}).click();
+  assert.equal((await openedSearches())[0].url,'https://github.com/');
+  await page.locator('#search-input').fill('github');
+  await page.getByRole('option').last().click();
+  assert.equal((await openedSearches())[1].url,'https://www.bing.com/search?q=github');
+  const touchContext = await browser.newContext({viewport:{width:375,height:812},isMobile:true,hasTouch:true});
+  try {
+    const touchPage = await touchContext.newPage(); await touchPage.goto(baseUrl);
+    await touchPage.evaluate(() => { window.open = url => { window.touchOpened = url; }; });
+    await touchPage.locator('#search-input').fill('g');
+    await touchPage.getByRole('option').filter({hasText:'GitHub'}).tap();
+    assert.equal(await touchPage.evaluate(() => window.touchOpened),'https://github.com/');
+  } finally { await touchContext.close(); }
+});
+
+test('Escape clears search while slash respects text fields and settings',async () => {
+  await visit(); await captureSearchOpens();
+  await page.locator('#search-input').fill('github'); await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#search-input').inputValue(),'');
+  assert.equal(await page.locator('#search-input').evaluate(el => el === document.activeElement),true);
+  assert.equal(await page.locator('#search-input').getAttribute('aria-activedescendant'),null);
+  await page.keyboard.press('/'); assert.equal(await page.locator('#search-input').inputValue(),'/');
+  await page.keyboard.press('Escape'); await page.keyboard.press('Enter');
+  assert.deepEqual(await openedSearches(),[]);
+  await appearance(); await page.locator('#page-name').focus(); await page.keyboard.press('/');
+  assert.equal(await page.locator('#page-name').inputValue(),`${defaults.name}/`);
+  await page.locator('#page-name').fill(defaults.name); await page.locator('#cancel-settings').focus(); await page.keyboard.press('/');
+  assert.equal(await page.locator('#cancel-settings').evaluate(el => el === document.activeElement),true);
+  await page.locator('#cancel-settings').click();
+  await page.evaluate(() => { const editor = document.createElement('div'); editor.id = 'test-editor'; editor.contentEditable = 'true'; document.body.append(editor); editor.focus(); });
+  await page.keyboard.press('/'); assert.equal(await page.locator('#test-editor').textContent(),'/');
+});
+
+test('IME confirmation does not launch a site or handle navigation shortcuts',async () => {
+  await visit(); await captureSearchOpens();
+  await page.locator('#search-input').fill('知乎');
+  await page.locator('#search-input').dispatchEvent('compositionstart');
+  assert.equal(await page.locator('#search-suggestions').isVisible(),false);
+  await page.keyboard.press('Enter');
+  await page.locator('#search-form').dispatchEvent('submit');
+  assert.deepEqual(await openedSearches(),[]);
+  await page.locator('#search-input').dispatchEvent('keydown',{key:'Escape',isComposing:true});
+  assert.equal(await page.locator('#search-input').inputValue(),'知乎');
+  await page.locator('#search-input').dispatchEvent('compositionend');
+  assert.match(await page.getByRole('option').first().textContent(),/知乎/);
+  await page.keyboard.press('Enter'); assert.equal((await openedSearches())[0].url,'https://www.zhihu.com/');
+});
+
+test('suggestions close on outside interaction or Tab and preserve query text',async () => {
+  await visit(); await page.locator('#search-input').fill('github');
+  await page.locator('#nav-heading').click();
+  assert.equal(await page.locator('#search-suggestions').isVisible(),false);
+  assert.equal(await page.locator('#search-input').inputValue(),'github');
+  await page.locator('#search-input').focus(); assert.equal(await page.locator('#search-suggestions').isVisible(),true);
+  await page.keyboard.press('Tab'); await page.keyboard.press('Tab');
+  assert.equal(await page.locator('#search-suggestions').isVisible(),false);
+  assert.equal(await page.locator('#search-input').getAttribute('aria-activedescendant'),null);
+});
+
+test('search uses edited sites immediately after settings are saved',async () => {
+  await visit(); await page.locator('#open-settings').click();
+  await page.locator('#site-editor [data-field="name"]').first().fill('新收藏入口'); await save();
+  await page.locator('#search-input').fill('新收藏');
+  assert.match(await page.getByRole('option').first().textContent(),/新收藏入口/);
+  await page.locator('#open-settings').click();
+  await page.locator('#site-editor .editor-row').first().getByRole('button',{name:'删除第 1 项',exact:true}).click(); await save();
+  await page.locator('#search-input').focus();
+  assert.equal(await page.getByRole('option').count(),1);
+  assert.match(await page.getByRole('option').first().textContent(),/使用 Bing/);
+});
+
+test('long or HTML-like queries are rendered as text and suggestions fit mobile and desktop',async () => {
+  await visit();
+  const query = '<img src=x onerror="window.injected=1">'.repeat(8);
+  await page.locator('#search-input').fill(query);
+  assert.equal(await page.locator('#search-results img').count(),0);
+  assert.equal(await page.evaluate(() => window.injected),undefined);
+  assert.match(await page.getByRole('option').first().textContent(),/<img src=x/);
+  for (const width of [320,375,768,1280]) {
+    await page.setViewportSize({width,height:812});
+    for (const theme of ['light','dark']) {
+      await page.evaluate(theme => document.documentElement.dataset.theme = theme,theme);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),true);
+      assert.equal(await page.locator('#search-suggestions').evaluate(el => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth; }),true);
+    }
+  }
+});
