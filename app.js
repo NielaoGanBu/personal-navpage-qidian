@@ -21,6 +21,8 @@ const icons = {
 const svg = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name] || icons.grid}</svg>`;
 document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = svg(el.dataset.icon); });
 const clone = value => JSON.parse(JSON.stringify(value));
+const snapshot = value => JSON.stringify(value, (key,item) => item && typeof item === 'object' && !Array.isArray(item)
+  ? Object.fromEntries(Object.entries(item).sort(([a],[b]) => a.localeCompare(b))) : item);
 const STORAGE = 'personal-nav-config-v1';
 let toastTimer;
 function toast(message) { $('toast').textContent = message; $('toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('toast').hidden = true; }, 3500); }
@@ -101,7 +103,8 @@ function validate(c) {
   c.engines.forEach((e,i) => { if (!e || typeof e.name !== 'string' || !e.name.trim() || e.name.length > 30 || typeof e.id !== 'string' || ids.has(e.id) || !e.id || typeof e.url !== 'string' || !e.url.includes('{q}') || !validUrl(e.url.replaceAll('{q}','test'))) throw Error(`第 ${i+1} 个引擎：请填写名称，搜索地址必须是 http/https，并包含 {q}。`); ids.add(e.id); });
   if (!ids.has(c.defaultEngine)) throw Error('请选择有效的默认搜索引擎。');
   const a = c.appearance;
-  if (!a || !['solid','image'].includes(a.type) || !/^#[0-9a-f]{6}$/i.test(a.light) || !/^#[0-9a-f]{6}$/i.test(a.dark) || typeof a.image !== 'string' || (a.image && !/^data:image\/(jpeg|png|webp);base64,[a-z0-9+/=]+$/i.test(a.image))) throw Error('背景配置格式不正确。');
+  if (a && a.compact === undefined) a.compact = false;
+  if (!a || typeof a.compact !== 'boolean' || !['solid','image'].includes(a.type) || !/^#[0-9a-f]{6}$/i.test(a.light) || !/^#[0-9a-f]{6}$/i.test(a.dark) || typeof a.image !== 'string' || (a.image && !/^data:image\/(jpeg|png|webp);base64,[a-z0-9+/=]+$/i.test(a.image))) throw Error('外观背景配置格式不正确。');
   if (a.type === 'image' && !a.image) throw Error('请选择背景图片，或改用纯色背景。');
   return c;
 }
@@ -111,6 +114,11 @@ try { const stored = localStorage.getItem(STORAGE); if (stored) config = validat
 try { validate(config); } catch (error) { document.body.textContent = `配置错误：${error.message} 请恢复有效的 config.js。`; throw error; }
 let selectedEngine = config.defaultEngine;
 let draft;
+let draftBaseline = '';
+let serverDraftSnapshot = '';
+let deletedSite;
+let draftReadToken = 0;
+let draftReadPending = false;
 let activeTab = 'sites';
 const engineSlider = document.createElement('span');
 engineSlider.className = 'engine-slider';
@@ -170,6 +178,7 @@ function renderEngines() {
   moveEngineSlider();
 }
 function render() {
+  document.body.classList.toggle('compact-layout', config.appearance.compact);
   $('brand-name').textContent = config.name;
   document.title = `${config.name} · 个人导航`;
   $('engine-label').hidden = !config.showEngineLabel;
@@ -210,10 +219,20 @@ function collectDraft() {
   draft.name = $('page-name').value.trim(); draft.defaultEngine = $('default-engine').value;
   draft.showEngineLabel = $('show-engine-label').checked;
   draft.intro = {eyebrow:$('intro-eyebrow-input').value.trim(),title:$('intro-title-input').value.trim(),subtitle:$('intro-subtitle-input').value.trim()};
-  Object.assign(draft.appearance,{light:$('light-color').value,dark:$('dark-color').value,type:$('background-type').value});
+  Object.assign(draft.appearance,{light:$('light-color').value,dark:$('dark-color').value,type:$('background-type').value,compact:$('compact-layout').checked});
 }
 function reorder(kind, i, delta) { collectDraft(); const list = draft[kind]; [list[i],list[i+delta]] = [list[i+delta],list[i]]; renderEditors(); }
-function remove(kind,i) { collectDraft(); draft[kind].splice(i,1); if (kind === 'engines' && !draft.engines.some(e => e.id === draft.defaultEngine)) draft.defaultEngine = draft.engines[0]?.id || ''; renderEditors(); }
+function remove(kind,i) {
+  collectDraft();
+  if (kind === 'sites') {
+    deletedSite = {site:clone(draft.sites[i]),index:i};
+    $('site-undo-message').textContent = `已删除“${draft.sites[i].name || '未命名网站'}”`;
+    $('site-undo').hidden = false;
+  }
+  draft[kind].splice(i,1);
+  if (kind === 'engines' && !draft.engines.some(e => e.id === draft.defaultEngine)) draft.defaultEngine = draft.engines[0]?.id || '';
+  renderEditors();
+}
 function renderEditors() {
   [['sites','site-editor'],['engines','engine-editor']].forEach(([kind,id]) => {
     $(id).replaceChildren();
@@ -227,33 +246,104 @@ function renderEditors() {
   $('default-engine').replaceChildren(); draft.engines.forEach(e => { const option = document.createElement('option'); option.value = e.id; option.textContent = e.name || '未命名引擎'; $('default-engine').append(option); }); $('default-engine').value = draft.defaultEngine;
   $('page-name').value = draft.name; $('light-color').value = draft.appearance.light; $('dark-color').value = draft.appearance.dark; $('background-type').value = draft.appearance.type;
   $('show-engine-label').checked = draft.showEngineLabel;
+  $('compact-layout').checked = draft.appearance.compact;
   $('intro-eyebrow-input').value = draft.intro.eyebrow; $('intro-title-input').value = draft.intro.title; $('intro-subtitle-input').value = draft.intro.subtitle;
   renderImage();
 }
 function renderImage() { $('image-settings').hidden = $('background-type').value !== 'image'; $('background-preview').hidden = !draft.appearance.image; if (draft.appearance.image) $('background-preview').src = draft.appearance.image; else $('background-preview').removeAttribute('src'); $('remove-background').hidden = !draft.appearance.image; }
 function switchTab(tab) { activeTab = tab; document.querySelectorAll('[data-tab]').forEach(b => { const active = b.dataset.tab === tab; b.setAttribute('aria-selected',String(active)); b.tabIndex = active ? 0 : -1; }); ['sites','engines','appearance'].forEach(t => { $(`panel-${t}`).hidden = t !== tab; }); }
 document.querySelectorAll('[data-tab]').forEach(b => { b.onclick = () => switchTab(b.dataset.tab); b.onkeydown = event => { if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return; event.preventDefault(); const tabs = ['sites','engines','appearance']; let i = tabs.indexOf(activeTab); i = event.key === 'Home' ? 0 : event.key === 'End' ? 2 : (i + (event.key === 'ArrowRight' ? 1 : -1) + 3) % 3; switchTab(tabs[i]); $(`tab-${tabs[i]}`).focus(); }; });
-function openSettings(tab = 'sites') { draft = clone(config); $('settings-error').hidden = true; renderEditors(); switchTab(tab); $('settings-dialog').showModal(); }
+function clearSiteUndo() { deletedSite = undefined; $('site-undo').hidden = true; }
+function setDraftReadPending(pending) {
+  draftReadPending = pending;
+  ['export-config','import-config','background-upload','use-server'].forEach(id => { $(id).disabled = pending; });
+  $('settings-form').querySelector('button[type="submit"]').disabled = pending;
+}
+function openSettings(tab = 'sites') {
+  draft = clone(config);
+  serverDraftSnapshot = '';
+  clearSiteUndo();
+  $('settings-error').hidden = true;
+  renderEditors(); collectDraft(); draftBaseline = snapshot(draft);
+  switchTab(tab); $('settings-dialog').showModal();
+}
+function closeSettings() {
+  draftReadToken++;
+  setDraftReadPending(false);
+  $('background-upload').value = $('import-config').value = '';
+  $('settings-dialog').close();
+}
+function requestSettingsClose() {
+  collectDraft();
+  if (draftReadPending || serverDraftSnapshot || snapshot(draft) !== draftBaseline) $('discard-dialog').showModal();
+  else closeSettings();
+}
 $('open-settings').onclick = () => openSettings(); $('edit-sites').onclick = () => openSettings(); $('add-first').onclick = () => { openSettings(); $('add-site').click(); };
-$('close-settings').onclick = $('cancel-settings').onclick = () => $('settings-dialog').close();
-$('settings-dialog').addEventListener('click',e => { if (e.target === $('settings-dialog')) { const r = e.target.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) e.target.close(); } });
+$('close-settings').onclick = $('cancel-settings').onclick = requestSettingsClose;
+$('settings-dialog').addEventListener('cancel',event => { event.preventDefault(); requestSettingsClose(); });
+$('settings-dialog').addEventListener('click',e => { if (e.target === $('settings-dialog')) { const r = e.target.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) requestSettingsClose(); } });
+$('continue-editing').onclick = () => $('discard-dialog').close();
+$('discard-changes').onclick = () => { $('discard-dialog').close(); closeSettings(); };
+$('undo-site').onclick = () => {
+  if (!deletedSite) return;
+  collectDraft();
+  draft.sites.splice(Math.min(deletedSite.index,draft.sites.length),0,deletedSite.site);
+  const index = Math.min(deletedSite.index,draft.sites.length-1);
+  clearSiteUndo(); renderEditors();
+  $('site-editor').children[index].querySelector('input').focus();
+};
 $('add-site').onclick = () => { collectDraft(); draft.sites.push({name:'',url:'https://',badge:'',description:''}); renderEditors(); $('site-editor').lastElementChild.querySelector('input').focus(); };
 $('add-engine').onclick = () => { collectDraft(); draft.engines.push({id:`custom-${Date.now()}`,name:'',url:'https://example.com/search?q={q}'}); if (!draft.defaultEngine) draft.defaultEngine = draft.engines.at(-1).id; renderEditors(); $('engine-editor').lastElementChild.querySelector('input').focus(); };
 $('background-type').onchange = renderImage;
 $('remove-background').onclick = () => { draft.appearance.image = ''; $('background-type').value = 'solid'; renderImage(); };
 function showError(error) { $('settings-error').textContent = error.message; $('settings-error').hidden = false; $('settings-error').scrollIntoView({block:'nearest'}); }
 $('settings-form').noValidate = true;
-$('settings-form').onsubmit = event => { event.preventDefault(); try { collectDraft(); validate(draft); localStorage.setItem(STORAGE,JSON.stringify(draft)); config = clone(draft); selectedEngine = config.defaultEngine; render(); $('settings-dialog').close(); toast('已保存，本机立即生效。'); } catch (error) { showError(error.name === 'QuotaExceededError' ? Error('浏览器存储空间不足，请换一张较小的图片。') : error); } };
+$('settings-form').onsubmit = event => {
+  event.preventDefault();
+  if (draftReadPending) return;
+  try {
+    collectDraft(); validate(draft);
+    const content = JSON.stringify(draft);
+    const useServer = !!serverDraftSnapshot && snapshot(draft) === serverDraftSnapshot;
+    if (useServer) localStorage.removeItem(STORAGE);
+    else localStorage.setItem(STORAGE,content);
+    config = clone(draft); selectedEngine = config.defaultEngine; render(); closeSettings();
+    toast(useServer ? '已使用服务器配置，本机修改已清除。' : '已保存，本机立即生效。');
+  } catch (error) { showError(error.name === 'QuotaExceededError' ? Error('浏览器存储空间不足，请换一张较小的图片。') : error); }
+};
 $('background-upload').onchange = async event => {
   const file = event.target.files[0]; if (!file) return;
-  const saveButton = $('settings-form').querySelector('button[type="submit"]'); saveButton.disabled = true; $('export-config').disabled = true;
+  const token = ++draftReadToken;
+  setDraftReadPending(true);
   try {
     if (!['image/jpeg','image/png','image/webp'].includes(file.type)) throw Error('请选择 JPG、PNG 或 WebP 图片。');
-    const image = await createImageBitmap(file); const ratio = Math.min(1,1920 / Math.max(image.width,image.height)); const canvas = document.createElement('canvas'); canvas.width = Math.round(image.width*ratio); canvas.height = Math.round(image.height*ratio); canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height); image.close(); draft.appearance.image = canvas.toDataURL('image/webp',.82); $('background-type').value = 'image'; renderImage(); $('settings-error').hidden = true;
-  } catch (error) { showError(Error(`图片无法读取：${error.message}`)); } finally { saveButton.disabled = false; $('export-config').disabled = false; event.target.value = ''; }
+    const image = await createImageBitmap(file);
+    if (token !== draftReadToken) { image.close(); return; }
+    const ratio = Math.min(1,1920 / Math.max(image.width,image.height)); const canvas = document.createElement('canvas'); canvas.width = Math.round(image.width*ratio); canvas.height = Math.round(image.height*ratio); canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height); image.close(); draft.appearance.image = canvas.toDataURL('image/webp',.82); $('background-type').value = 'image'; renderImage(); $('settings-error').hidden = true;
+  } catch (error) { if (token === draftReadToken) showError(Error(`图片无法读取：${error.message}`)); }
+  finally { if (token === draftReadToken) { setDraftReadPending(false); event.target.value = ''; } }
 };
 $('export-config').onclick = () => { try { collectDraft(); validate(draft); const content = `// 个人导航配置：将此文件上传并覆盖服务器上的 config.js。\nwindow.NAV_CONFIG = ${JSON.stringify(draft,null,2)};\n`; const url = URL.createObjectURL(new Blob([content],{type:'text/javascript;charset=utf-8'})); const a = document.createElement('a'); a.href = url; a.download = 'config.js'; a.click(); setTimeout(() => URL.revokeObjectURL(url),1000); toast('已导出当前设置（包含背景图片）。'); } catch (error) { showError(error); } };
-$('import-config').onchange = async event => { const file = event.target.files[0]; if (!file) return; try { let content = (await file.text()).trim().replace(/^\uFEFF/,''); content = content.replace(/^(?:\s*\/\/[^\n]*\n)*/,'').trim(); if (content.startsWith('window.NAV_CONFIG')) content = content.replace(/^window\.NAV_CONFIG\s*=\s*/,'').replace(/;\s*$/,''); draft = validate(JSON.parse(content)); renderEditors(); $('settings-error').hidden = true; toast('已载入配置，点击保存设置后生效。'); } catch (error) { showError(Error(`导入失败：${error.message}`)); } finally { event.target.value = ''; } };
+$('import-config').onchange = async event => {
+  const file = event.target.files[0]; if (!file) return;
+  const token = ++draftReadToken;
+  setDraftReadPending(true);
+  try {
+    let content = (await file.text()).trim().replace(/^\uFEFF/,'');
+    if (token !== draftReadToken) return;
+    content = content.replace(/^(?:\s*\/\/[^\n]*\n)*/,'').trim();
+    if (content.startsWith('window.NAV_CONFIG')) content = content.replace(/^window\.NAV_CONFIG\s*=\s*/,'').replace(/;\s*$/,'');
+    draft = validate(JSON.parse(content)); serverDraftSnapshot = ''; clearSiteUndo(); renderEditors(); $('settings-error').hidden = true;
+    toast('已载入配置，点击保存设置后生效。');
+  } catch (error) { if (token === draftReadToken) showError(Error(`导入失败：${error.message}`)); }
+  finally { if (token === draftReadToken) { setDraftReadPending(false); event.target.value = ''; } }
+};
 document.querySelector('.import-label').onkeydown = event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); $('import-config').click(); } };
-$('use-server').onclick = () => { try { validate(window.NAV_CONFIG); localStorage.removeItem(STORAGE); config = clone(window.NAV_CONFIG); selectedEngine = config.defaultEngine; draft = clone(config); renderEditors(); render(); toast('已使用服务器配置，本机修改已清除。'); } catch (error) { showError(error); } };
+$('use-server').onclick = () => {
+  try {
+    draft = validate(clone(window.NAV_CONFIG));
+    clearSiteUndo(); renderEditors(); collectDraft(); serverDraftSnapshot = snapshot(draft); $('settings-error').hidden = true;
+    toast('已载入服务器配置，点击保存设置后生效。');
+  } catch (error) { showError(error); }
+};
 render(); if (startupMessage) toast(startupMessage);

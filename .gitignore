@@ -10,6 +10,7 @@ private/
 .DS_Store
 Thumbs.db
 .vscode/
+node_modules/
 
 # 发布包通过 GitHub Releases 提供
 *.zip
